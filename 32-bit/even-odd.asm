@@ -5,24 +5,33 @@ STDIN equ 0
 STDOUT equ 1
 
 section .data
+prompt db 'Enter a number: '
+plen equ $ - prompt
 even_msg db 'Number is even.', 0xA  ; Add newline for better formatting
 len1 equ $ - even_msg
 odd_msg db 'Number is odd.', 0xA
 len2 equ $ - odd_msg
 
 section .bss
-    input resb 2
+    input resb 2        ; reserve 2 bytes for user input (one for newline)
 
 section .text
     global _start
 
 _start:
+    ; write prompt
+    MOV EAX, SYS_WRITE  ; syscall: SYS_WRITE
+    MOV EBX, STDOUT     ; file desciptor: STDOUT
+    MOV ECX, prompt     ; pointer to prompt message
+    MOV EDX, plen       ; length of prompt message
+    INT 0x80            ; call kernel to write to stdout
+
     ; user input
     MOV EAX, SYS_READ   ; syscall: SYS_READ
     MOV EBX, STDIN      ; file descriptor: STDIN
     MOV ECX, input      ; pointer to user input
     MOV EDX, 2          ; length of user input
-    INT 0X80            ; call kernel to read to stdin
+    INT 0x80            ; call kernel to read to stdin
 
     ; convert ASCII input to decimal
     MOV AL, [input]     ; load first byte of the input variable into the AX register
